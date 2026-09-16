@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vélo'v Décines Centre — Statistiques avancées</title>
+<meta name="description" content="Tableau de bord de disponibilité en temps réel et de statistiques historiques pour la station Vélo'v Décines Centre." />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="assets/vendor/chart.umd.min.js"></script>
+<script src="assets/vendor/moment.min.js"></script>
+<script src="assets/vendor/chartjs-adapter-moment.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="page-header">
+    <div>
+      <h1>Vélo'v — Décines Centre</h1>
+      <p id="subtitle">Chargement des données…</p>
+    </div>
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Changer de thème">🌓 Thème</button>
+  </header>
+
+  <div class="status-banner warn" id="status-banner"></div>
+
+  <div id="content" style="display:none">
+    <section class="tiles" id="tiles" aria-label="État actuel de la station"></section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Évolution des disponibilités</h2>
+          <div class="panel-desc">Vélos et places libres au fil du temps</div>
+        </div>
+        <div class="range-buttons" id="range-buttons">
+          <button data-range="24">24 h</button>
+          <button data-range="168">7 j</button>
+          <button data-range="720">30 j</button>
+          <button data-range="all" class="active">Tout</button>
+        </div>
+      </div>
+      <div class="legend-row">
+        <span class="item"><span class="swatch" style="background:var(--series-1)"></span>Vélos disponibles</span>
+        <span class="item"><span class="swatch" style="background:var(--series-2)"></span>Places disponibles</span>
+      </div>
+      <div class="chart-holder"><canvas id="chart-timeseries"></canvas></div>
+    </section>
+
+    <div class="two-col">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Par heure de la journée</h2>
+            <div class="panel-desc">Moyenne de vélos disponibles</div>
+          </div>
+        </div>
+        <div class="chart-holder short"><canvas id="chart-hourly"></canvas></div>
+        <details class="table-view">
+          <summary>Voir les données en tableau</summary>
+          <table class="stats-table" id="table-hourly">
+            <thead><tr><th>Heure</th><th>Vélos (moy.)</th><th>Places (moy.)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </details>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Par jour de la semaine</h2>
+            <div class="panel-desc">Moyenne de vélos disponibles</div>
+          </div>
+        </div>
+        <div class="chart-holder short"><canvas id="chart-weekday"></canvas></div>
+        <details class="table-view">
+          <summary>Voir les données en tableau</summary>
+          <table class="stats-table" id="table-weekday">
+            <thead><tr><th>Jour</th><th>Vélos (moy.)</th><th>Places (moy.)</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </details>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Statistiques globales</h2>
+          <div class="panel-desc">Calculées sur tout l'historique collecté</div>
+        </div>
+      </div>
+      <div class="tiles" id="global-stats"></div>
+    </section>
+  </div>
+
+  <div class="empty-state" id="empty-state" style="display:none">
+    <p><strong>Aucune donnée pour le moment.</strong></p>
+    <p>La collecte automatique (toutes les 15 minutes via GitHub Actions) n'a pas encore produit de relevé, ou la clé API JCDecaux n'est pas configurée.</p>
+  </div>
+
+  <footer>
+    Données : <a href="https://developer.jcdecaux.com/" target="_blank" rel="noopener">JCDecaux Open API</a>,
+    réseau Vélo'v Métropole de Lyon · Collecte automatisée toutes les 15 min
+  </footer>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>
