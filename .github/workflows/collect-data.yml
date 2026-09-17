@@ -19,8 +19,18 @@ jobs:
   collect:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      # Site code (main): only needed to run scripts/fetch_station.py.
+      - name: Checkout site
         uses: actions/checkout@v4
+
+      # Data lives on its own branch that GitHub Pages never watches, so
+      # pushing a new snapshot never triggers a Pages rebuild — only
+      # pushes to main (actual site changes) do.
+      - name: Checkout data branch
+        uses: actions/checkout@v4
+        with:
+          ref: data
+          path: data-branch
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,13 +40,11 @@ jobs:
       - name: Fetch station snapshot
         env:
           JCDECAUX_API_KEY: ${{ secrets.JCDECAUX_API_KEY }}
+          DATA_FILE: ${{ github.workspace }}/data-branch/data/history.jsonl
         run: python3 scripts/fetch_station.py
 
-      # The site fetches data/history.jsonl straight from
-      # raw.githubusercontent.com rather than through the Pages
-      # deployment, so this push is all that's needed for the data to
-      # go live — no Pages rebuild is triggered or required.
       - name: Commit and push data
+        working-directory: data-branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -45,6 +53,6 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore: update station snapshot"
-            git pull --rebase origin "${GITHUB_REF_NAME}"
-            git push
+            git pull --rebase origin data
+            git push origin HEAD:data
           fi

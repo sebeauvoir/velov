@@ -2,11 +2,11 @@
   "use strict";
 
   const TZ = "Europe/Paris";
-  // Fetched straight from raw.githubusercontent.com rather than the Pages
-  // deployment: this file updates on every git push with no Pages rebuild
-  // needed, so the page itself only needs to be redeployed when the
-  // HTML/CSS/JS actually change.
-  const DATA_URL = "https://raw.githubusercontent.com/sebeauvoir/velov/main/data/history.jsonl";
+  // Fetched from the "data" branch on raw.githubusercontent.com rather
+  // than through the Pages deployment on "main": this file updates on
+  // every git push with no build step, and since Pages only watches
+  // "main", pushes here never trigger a site rebuild.
+  const DATA_URL = "https://raw.githubusercontent.com/sebeauvoir/velov/data/data/history.jsonl";
   const WEEKDAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
   const els = {

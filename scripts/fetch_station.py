@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 CONTRACT = "lyon"
 STATION_MATCH = ("decines", "centre")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_FILE = os.path.join(ROOT, "data", "history.jsonl")
+DATA_FILE = os.environ.get("DATA_FILE") or os.path.join(ROOT, "data", "history.jsonl")
 API_URL = "https://api.jcdecaux.com/vls/v1/stations?contract={contract}&apiKey={key}"
 
 
