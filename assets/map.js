@@ -45,7 +45,8 @@
   }
   window.VelovSelectStation = selectStation;
 
-  fetch(STATIONS_URL, { cache: "no-store" })
+  // Same CDN-caching issue as app.js: bust it with a changing query param.
+  fetch(STATIONS_URL + "?t=" + Date.now(), { cache: "no-store" })
     .then((res) => {
       if (!res.ok) throw new Error("HTTP " + res.status);
       return res.json();

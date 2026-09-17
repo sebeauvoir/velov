@@ -52,7 +52,10 @@
     els.emptyState.style.display = "none";
     els.statusBanner.classList.remove("visible");
 
-    fetch(DATA_BASE + number + ".jsonl", { cache: "no-store" })
+    // raw.githubusercontent.com sits behind a CDN that caches responses
+    // for a few minutes regardless of the browser's own cache headers, so
+    // a changing query param is needed to force a fresh fetch each time.
+    fetch(DATA_BASE + number + ".jsonl?t=" + Date.now(), { cache: "no-store" })
       .then((res) => {
         if (!res.ok) throw new Error("HTTP " + res.status);
         return res.text();
