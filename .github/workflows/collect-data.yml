@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
 
 concurrency:
   group: collect-data
@@ -33,28 +32,19 @@ jobs:
           JCDECAUX_API_KEY: ${{ secrets.JCDECAUX_API_KEY }}
         run: python3 scripts/fetch_station.py
 
+      # The site fetches data/history.jsonl straight from
+      # raw.githubusercontent.com rather than through the Pages
+      # deployment, so this push is all that's needed for the data to
+      # go live — no Pages rebuild is triggered or required.
       - name: Commit and push data
-        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/history.jsonl
           if git diff --cached --quiet; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes to commit"
           else
             git commit -m "chore: update station snapshot"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push
-            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
-
-      # A push made with the default GITHUB_TOKEN does not trigger GitHub
-      # Pages' own rebuild, so the site would keep serving stale data
-      # forever. Request a rebuild explicitly whenever data changed.
-      - name: Trigger Pages rebuild
-        if: steps.commit.outputs.changed == 'true'
-        run: |
-          curl -sS -X POST \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/pages/builds"

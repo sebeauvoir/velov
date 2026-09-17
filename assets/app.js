@@ -2,7 +2,11 @@
   "use strict";
 
   const TZ = "Europe/Paris";
-  const DATA_URL = "data/history.jsonl";
+  // Fetched straight from raw.githubusercontent.com rather than the Pages
+  // deployment: this file updates on every git push with no Pages rebuild
+  // needed, so the page itself only needs to be redeployed when the
+  // HTML/CSS/JS actually change.
+  const DATA_URL = "https://raw.githubusercontent.com/sebeauvoir/velov/main/data/history.jsonl";
   const WEEKDAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
   const els = {
