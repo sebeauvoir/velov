@@ -1,2 +1,3 @@
 {"ts": "2026-09-17T07:45:24+00:00", "bikes": 25, "bikes_mechanical": 8, "bikes_electric": 17, "stands": 1, "capacity": 26, "status": "OPEN"}
 {"ts": "2026-09-17T07:45:38+00:00", "bikes": 25, "bikes_mechanical": 8, "bikes_electric": 17, "stands": 1, "capacity": 26, "status": "OPEN"}
+{"ts": "2026-09-17T08:00:56+00:00", "bikes": 26, "bikes_mechanical": 9, "bikes_electric": 17, "stands": 0, "capacity": 26, "status": "OPEN"}
