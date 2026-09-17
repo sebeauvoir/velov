@@ -17,7 +17,7 @@ CONTRACT = "lyon"
 STATION_MATCH = ("decines", "centre")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_FILE = os.environ.get("DATA_FILE") or os.path.join(ROOT, "data", "history.jsonl")
-API_URL = "https://api.jcdecaux.com/vls/v1/stations?contract={contract}&apiKey={key}"
+API_URL = "https://api.jcdecaux.com/vls/v3/stations?contract={contract}&apiKey={key}"
 
 
 def normalize(text):
@@ -52,12 +52,15 @@ def main():
         print("Station 'Decines Centre' not found in contract 'lyon'", file=sys.stderr)
         sys.exit(1)
 
+    availabilities = station.get("totalStands", {}).get("availabilities", {})
     record = {
         "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "name": station.get("name"),
-        "bikes": station.get("available_bikes"),
-        "stands": station.get("available_bike_stands"),
-        "capacity": station.get("bike_stands"),
+        "bikes": availabilities.get("bikes"),
+        "bikes_mechanical": availabilities.get("mechanicalBikes"),
+        "bikes_electric": availabilities.get("electricalBikes"),
+        "stands": availabilities.get("stands"),
+        "capacity": station.get("totalStands", {}).get("capacity"),
         "status": station.get("status"),
     }
 

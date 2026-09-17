@@ -29,7 +29,7 @@
       <div class="panel-head">
         <div>
           <h2>Évolution des disponibilités</h2>
-          <div class="panel-desc">Vélos et places libres au fil du temps</div>
+          <div class="panel-desc">Vélos (mécaniques / électriques) et places libres au fil du temps</div>
         </div>
         <div class="range-buttons" id="range-buttons">
           <button data-range="24">24 h</button>
@@ -39,7 +39,8 @@
         </div>
       </div>
       <div class="legend-row">
-        <span class="item"><span class="swatch" style="background:var(--series-1)"></span>Vélos disponibles</span>
+        <span class="item"><span class="swatch" style="background:var(--series-1)"></span>Mécaniques</span>
+        <span class="item"><span class="swatch" style="background:var(--series-3)"></span>Électriques</span>
         <span class="item"><span class="swatch" style="background:var(--series-2)"></span>Places disponibles</span>
       </div>
       <div class="chart-holder"><canvas id="chart-timeseries"></canvas></div>
@@ -50,14 +51,18 @@
         <div class="panel-head">
           <div>
             <h2>Par heure de la journée</h2>
-            <div class="panel-desc">Moyenne de vélos disponibles</div>
+            <div class="panel-desc">Moyenne mécaniques / électriques</div>
           </div>
+        </div>
+        <div class="legend-row">
+          <span class="item"><span class="swatch" style="background:var(--series-1)"></span>Mécaniques</span>
+          <span class="item"><span class="swatch" style="background:var(--series-3)"></span>Électriques</span>
         </div>
         <div class="chart-holder short"><canvas id="chart-hourly"></canvas></div>
         <details class="table-view">
           <summary>Voir les données en tableau</summary>
           <table class="stats-table" id="table-hourly">
-            <thead><tr><th>Heure</th><th>Vélos (moy.)</th><th>Places (moy.)</th></tr></thead>
+            <thead><tr><th>Heure</th><th>Méca. (moy.)</th><th>Élec. (moy.)</th><th>Places (moy.)</th></tr></thead>
             <tbody></tbody>
           </table>
         </details>
@@ -67,14 +72,18 @@
         <div class="panel-head">
           <div>
             <h2>Par jour de la semaine</h2>
-            <div class="panel-desc">Moyenne de vélos disponibles</div>
+            <div class="panel-desc">Moyenne mécaniques / électriques</div>
           </div>
+        </div>
+        <div class="legend-row">
+          <span class="item"><span class="swatch" style="background:var(--series-1)"></span>Mécaniques</span>
+          <span class="item"><span class="swatch" style="background:var(--series-3)"></span>Électriques</span>
         </div>
         <div class="chart-holder short"><canvas id="chart-weekday"></canvas></div>
         <details class="table-view">
           <summary>Voir les données en tableau</summary>
           <table class="stats-table" id="table-weekday">
-            <thead><tr><th>Jour</th><th>Vélos (moy.)</th><th>Places (moy.)</th></tr></thead>
+            <thead><tr><th>Jour</th><th>Méca. (moy.)</th><th>Élec. (moy.)</th><th>Places (moy.)</th></tr></thead>
             <tbody></tbody>
           </table>
         </details>

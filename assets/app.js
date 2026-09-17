@@ -113,19 +113,27 @@
   function renderTiles(latest) {
     const occupancy = latest.capacity ? Math.round((latest.bikes / latest.capacity) * 100) : null;
     const isOpen = String(latest.status).toUpperCase() === "OPEN";
+    const hasSplit = typeof latest.bikes_mechanical === "number" && typeof latest.bikes_electric === "number";
 
-    const tiles = [
-      { label: "Vélos disponibles", value: latest.bikes, sub: "sur " + latest.capacity + " bornes" },
-      { label: "Places disponibles", value: latest.stands, sub: "" },
-      { label: "Taux d'occupation", value: occupancy !== null ? occupancy + "%" : "—", sub: "" },
-      {
-        label: "Statut station",
-        value: '<span class="badge ' + (isOpen ? "open" : "closed") + '">' + (isOpen ? "Ouverte" : "Fermée") + "</span>",
-        sub: "",
-        small: true,
-        html: true,
-      },
-    ];
+    const tiles = hasSplit
+      ? [
+          { label: "Vélos mécaniques", value: latest.bikes_mechanical, sub: "" },
+          { label: "Vélos électriques", value: latest.bikes_electric, sub: "" },
+          { label: "Places disponibles", value: latest.stands, sub: "sur " + latest.capacity + " bornes" },
+          { label: "Taux d'occupation", value: occupancy !== null ? occupancy + "%" : "—", sub: "" },
+        ]
+      : [
+          { label: "Vélos disponibles", value: latest.bikes, sub: "sur " + latest.capacity + " bornes" },
+          { label: "Places disponibles", value: latest.stands, sub: "" },
+          { label: "Taux d'occupation", value: occupancy !== null ? occupancy + "%" : "—", sub: "" },
+        ];
+    tiles.push({
+      label: "Statut station",
+      value: '<span class="badge ' + (isOpen ? "open" : "closed") + '">' + (isOpen ? "Ouverte" : "Fermée") + "</span>",
+      sub: "",
+      small: true,
+      html: true,
+    });
 
     els.tiles.innerHTML = tiles
       .map(
@@ -151,6 +159,8 @@
     let occSum = 0;
     let occCount = 0;
     let openCount = 0;
+    let electricSum = 0;
+    let electricCount = 0;
 
     for (const r of records) {
       if (r.bikes < minBikes) {
@@ -166,10 +176,15 @@
         occCount++;
       }
       if (String(r.status).toUpperCase() === "OPEN") openCount++;
+      if (typeof r.bikes_mechanical === "number" && typeof r.bikes_electric === "number" && r.bikes > 0) {
+        electricSum += r.bikes_electric / r.bikes;
+        electricCount++;
+      }
     }
 
     const avgOcc = occCount ? Math.round((occSum / occCount) * 100) : null;
     const uptimePct = records.length ? Math.round((openCount / records.length) * 100) : null;
+    const avgElectricShare = electricCount ? Math.round((electricSum / electricCount) * 100) : null;
     const first = records[0];
     const since = formatDate(new Date(first.ts));
 
@@ -179,6 +194,7 @@
       { label: "Max. vélos observé", value: maxBikes, sub: maxAt ? formatDateTime(new Date(maxAt)) : "" },
       { label: "Occupation moyenne", value: avgOcc !== null ? avgOcc + "%" : "—", sub: "vélos / capacité" },
       { label: "Disponibilité station", value: uptimePct !== null ? uptimePct + "%" : "—", sub: "part des relevés 'ouverte'" },
+      { label: "Part électrique", value: avgElectricShare !== null ? avgElectricShare + "%" : "—", sub: "des vélos disponibles, en moy." },
     ];
 
     els.globalStats.innerHTML = stats
@@ -210,7 +226,8 @@
     }
 
     const labels = filtered.map((r) => new Date(r.ts));
-    const bikes = filtered.map((r) => r.bikes);
+    const mechanical = filtered.map((r) => (typeof r.bikes_mechanical === "number" ? r.bikes_mechanical : null));
+    const electric = filtered.map((r) => (typeof r.bikes_electric === "number" ? r.bikes_electric : null));
     const stands = filtered.map((r) => r.stands);
     const styles = chartStyles();
 
@@ -220,7 +237,8 @@
       data: {
         labels,
         datasets: [
-          lineDataset("Vélos disponibles", bikes, styles.series1),
+          lineDataset("Mécaniques", mechanical, styles.series1),
+          lineDataset("Électriques", electric, styles.series3),
           lineDataset("Places disponibles", stands, styles.series2),
         ],
       },
@@ -229,67 +247,72 @@
   }
 
   function renderHourly() {
-    const buckets = Array.from({ length: 24 }, () => ({ bikes: 0, stands: 0, n: 0 }));
-    for (const r of records) {
-      const h = localParts(r.ts).hour;
-      buckets[h].bikes += r.bikes;
-      buckets[h].stands += r.stands;
-      buckets[h].n++;
-    }
-    const avgBikes = buckets.map((b) => (b.n ? b.bikes / b.n : 0));
-    const avgStands = buckets.map((b) => (b.n ? b.stands / b.n : 0));
+    const buckets = bucketBy(24, (r) => localParts(r.ts).hour);
     const labels = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0") + "h");
-    const styles = chartStyles();
-
-    if (hourChart) hourChart.destroy();
-    hourChart = new Chart(document.getElementById("chart-hourly"), {
-      type: "bar",
-      data: {
-        labels,
-        datasets: [barDataset("Vélos disponibles (moy.)", avgBikes, styles.series1)],
-      },
-      options: baseBarOptions(styles),
-    });
-
-    const tbody = document.querySelector("#table-hourly tbody");
-    tbody.innerHTML = labels
-      .map(
-        (l, i) =>
-          "<tr><td>" + l + "</td><td>" + avgBikes[i].toFixed(1) + "</td><td>" + avgStands[i].toFixed(1) + "</td></tr>"
-      )
-      .join("");
+    renderStackedSplitChart("chart-hourly", "table-hourly", labels, buckets);
   }
 
   function renderWeekday() {
-    const buckets = Array.from({ length: 7 }, () => ({ bikes: 0, stands: 0, n: 0 }));
-    for (const r of records) {
-      const d = localParts(r.ts).weekday;
-      buckets[d].bikes += r.bikes;
-      buckets[d].stands += r.stands;
-      buckets[d].n++;
-    }
-    // Reorder Mon..Sun for display
+    const buckets = bucketBy(7, (r) => localParts(r.ts).weekday);
+    // Reorder Sun-first buckets to Mon..Sun for display
     const order = [1, 2, 3, 4, 5, 6, 0];
     const labels = order.map((d) => WEEKDAYS[d]);
-    const avgBikes = order.map((d) => (buckets[d].n ? buckets[d].bikes / buckets[d].n : 0));
-    const avgStands = order.map((d) => (buckets[d].n ? buckets[d].stands / buckets[d].n : 0));
+    const reordered = order.map((d) => buckets[d]);
+    renderStackedSplitChart("chart-weekday", "table-weekday", labels, reordered);
+  }
+
+  function bucketBy(size, keyFn) {
+    const buckets = Array.from({ length: size }, () => ({ mechanical: 0, electric: 0, splitN: 0, stands: 0, n: 0 }));
+    for (const r of records) {
+      const key = keyFn(r);
+      const b = buckets[key];
+      b.stands += r.stands;
+      b.n++;
+      if (typeof r.bikes_mechanical === "number" && typeof r.bikes_electric === "number") {
+        b.mechanical += r.bikes_mechanical;
+        b.electric += r.bikes_electric;
+        b.splitN++;
+      }
+    }
+    return buckets;
+  }
+
+  function renderStackedSplitChart(canvasId, tableId, labels, buckets) {
+    const avgMechanical = buckets.map((b) => (b.splitN ? b.mechanical / b.splitN : 0));
+    const avgElectric = buckets.map((b) => (b.splitN ? b.electric / b.splitN : 0));
+    const avgStands = buckets.map((b) => (b.n ? b.stands / b.n : 0));
     const styles = chartStyles();
 
-    if (weekdayChart) weekdayChart.destroy();
-    weekdayChart = new Chart(document.getElementById("chart-weekday"), {
+    if (canvasId === "chart-hourly" && hourChart) hourChart.destroy();
+    if (canvasId === "chart-weekday" && weekdayChart) weekdayChart.destroy();
+
+    const chart = new Chart(document.getElementById(canvasId), {
       type: "bar",
       data: {
         labels,
-        datasets: [barDataset("Vélos disponibles (moy.)", avgBikes, styles.series1)],
+        datasets: [
+          { ...barDataset("Mécaniques", avgMechanical, styles.series1), stack: "bikes" },
+          { ...barDataset("Électriques", avgElectric, styles.series3, styles.surface), stack: "bikes" },
+        ],
       },
-      options: baseBarOptions(styles),
+      options: baseBarOptions(styles, true),
     });
+    if (canvasId === "chart-hourly") hourChart = chart;
+    else weekdayChart = chart;
 
-    const tbody = document.querySelector("#table-weekday tbody");
+    const tbody = document.querySelector("#" + tableId + " tbody");
     tbody.innerHTML = labels
       .map(
         (l, i) =>
-          "<tr><td>" + l + "</td><td>" + avgBikes[i].toFixed(1) + "</td><td>" + avgStands[i].toFixed(1) + "</td></tr>"
+          "<tr><td>" +
+          l +
+          "</td><td>" +
+          avgMechanical[i].toFixed(1) +
+          "</td><td>" +
+          avgElectric[i].toFixed(1) +
+          "</td><td>" +
+          avgStands[i].toFixed(1) +
+          "</td></tr>"
       )
       .join("");
   }
@@ -336,6 +359,8 @@
     return {
       series1: cs.getPropertyValue("--series-1").trim(),
       series2: cs.getPropertyValue("--series-2").trim(),
+      series3: cs.getPropertyValue("--series-3").trim(),
+      surface: cs.getPropertyValue("--surface-1").trim(),
       textSecondary: cs.getPropertyValue("--text-secondary").trim(),
       muted: cs.getPropertyValue("--text-muted").trim(),
       grid: cs.getPropertyValue("--gridline").trim(),
@@ -357,13 +382,16 @@
     };
   }
 
-  function barDataset(label, data, color) {
+  function barDataset(label, data, color, surface) {
     return {
       label,
       data,
       backgroundColor: color,
       borderRadius: 4,
       maxBarThickness: 28,
+      borderSkipped: false,
+      borderWidth: surface ? { top: 2 } : 0,
+      borderColor: surface || "transparent",
     };
   }
 
@@ -398,18 +426,20 @@
     };
   }
 
-  function baseBarOptions(styles) {
+  function baseBarOptions(styles, stacked) {
     return {
       responsive: true,
       maintainAspectRatio: false,
       plugins: { legend: { display: false } },
       scales: {
         x: {
+          stacked: !!stacked,
           grid: { display: false },
           ticks: { color: styles.muted },
           border: { color: styles.baseline },
         },
         y: {
+          stacked: !!stacked,
           beginAtZero: true,
           grid: { color: styles.grid },
           ticks: { color: styles.muted },
