@@ -1,4 +1,4 @@
-name: Collect Velo'v station data
+name: Collect Velo'v network data
 
 on:
   schedule:
@@ -37,22 +37,22 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Fetch station snapshot
+      - name: Fetch network snapshot
         env:
           JCDECAUX_API_KEY: ${{ secrets.JCDECAUX_API_KEY }}
-          DATA_FILE: ${{ github.workspace }}/data-branch/data/history.jsonl
-        run: python3 scripts/fetch_station.py
+          DATA_DIR: ${{ github.workspace }}/data-branch/data
+        run: python3 scripts/fetch_stations.py
 
       - name: Commit and push data
         working-directory: data-branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/history.jsonl
+          git add data/
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: update station snapshot"
+            git commit -m "chore: update network snapshot"
             git pull --rebase origin data
             git push origin HEAD:data
           fi

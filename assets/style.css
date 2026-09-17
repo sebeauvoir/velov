@@ -257,6 +257,34 @@ header.page-header p {
   height: 220px;
 }
 
+#map {
+  height: 380px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+.station-popup .name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.station-popup button {
+  margin-top: 6px;
+  background: var(--series-1);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;

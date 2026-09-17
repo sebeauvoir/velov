@@ -3,13 +3,14 @@
 
   const TZ = "Europe/Paris";
   // Fetched from the "data" branch on raw.githubusercontent.com rather
-  // than through the Pages deployment on "main": this file updates on
+  // than through the Pages deployment on "main": these files update on
   // every git push with no build step, and since Pages only watches
   // "main", pushes here never trigger a site rebuild.
-  const DATA_URL = "https://raw.githubusercontent.com/sebeauvoir/velov/data/data/history.jsonl";
+  const DATA_BASE = "https://raw.githubusercontent.com/sebeauvoir/velov/data/data/stations/";
   const WEEKDAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
 
   const els = {
+    stationTitle: document.getElementById("station-title"),
     subtitle: document.getElementById("subtitle"),
     statusBanner: document.getElementById("status-banner"),
     content: document.getElementById("content"),
@@ -25,27 +26,53 @@
   let hourChart = null;
   let weekdayChart = null;
   let currentRange = "all";
+  let currentStationNumber = null;
 
   initTheme();
   els.themeToggle.addEventListener("click", toggleTheme);
+  els.rangeButtons.addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-range]");
+    if (!btn) return;
+    currentRange = btn.dataset.range;
+    for (const b of els.rangeButtons.querySelectorAll("button")) {
+      b.classList.toggle("active", b === btn);
+    }
+    renderTimeseries(currentRange);
+  });
 
-  fetch(DATA_URL, { cache: "no-store" })
-    .then((res) => {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return res.text();
-    })
-    .then((text) => {
-      records = parseJsonl(text);
-      if (records.length === 0) {
-        showEmpty();
-        return;
-      }
-      render();
-    })
-    .catch((err) => {
-      console.error("Failed to load station history", err);
-      showEmpty();
-    });
+  function loadStation(number, name) {
+    currentStationNumber = number;
+    currentRange = "all";
+    for (const b of els.rangeButtons.querySelectorAll("button")) {
+      b.classList.toggle("active", b.dataset.range === "all");
+    }
+    els.stationTitle.textContent = "Vélo'v — " + (name || "Station " + number);
+    els.subtitle.textContent = "Chargement des données…";
+    els.content.style.display = "none";
+    els.emptyState.style.display = "none";
+    els.statusBanner.classList.remove("visible");
+
+    fetch(DATA_BASE + number + ".jsonl", { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        return res.text();
+      })
+      .then((text) => {
+        if (currentStationNumber !== number) return; // a newer selection won
+        records = parseJsonl(text);
+        if (records.length === 0) {
+          showEmpty();
+          return;
+        }
+        render();
+      })
+      .catch((err) => {
+        console.error("Failed to load station history", err);
+        if (currentStationNumber === number) showEmpty();
+      });
+  }
+
+  window.VelovApp = { loadStation };
 
   function parseJsonl(text) {
     const out = [];
@@ -83,16 +110,6 @@
     renderTimeseries(currentRange);
     renderHourly();
     renderWeekday();
-
-    els.rangeButtons.addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-range]");
-      if (!btn) return;
-      currentRange = btn.dataset.range;
-      for (const b of els.rangeButtons.querySelectorAll("button")) {
-        b.classList.toggle("active", b === btn);
-      }
-      renderTimeseries(currentRange);
-    });
   }
 
   function renderSubtitleAndBanner(latest) {

@@ -3,9 +3,11 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Vélo'v Décines Centre — Statistiques avancées</title>
-<meta name="description" content="Tableau de bord de disponibilité en temps réel et de statistiques historiques pour la station Vélo'v Décines Centre." />
+<title>Vélo'v Métropole de Lyon — Statistiques avancées</title>
+<meta name="description" content="Tableau de bord de disponibilité en temps réel et de statistiques historiques pour les stations Vélo'v de la Métropole de Lyon." />
 <link rel="stylesheet" href="assets/style.css" />
+<link rel="stylesheet" href="assets/vendor/leaflet/leaflet.css" />
+<script src="assets/vendor/leaflet/leaflet.js"></script>
 <script src="assets/vendor/chart.umd.min.js"></script>
 <script src="assets/vendor/moment.min.js"></script>
 <script src="assets/vendor/chartjs-adapter-moment.min.js"></script>
@@ -14,11 +16,21 @@
 <div class="wrap">
   <header class="page-header">
     <div>
-      <h1>Vélo'v — Décines Centre</h1>
+      <h1 id="station-title">Vélo'v — Métropole de Lyon</h1>
       <p id="subtitle">Chargement des données…</p>
     </div>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Changer de thème">🌓 Thème</button>
   </header>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>Choisir une station</h2>
+        <div class="panel-desc">Cliquez un point sur la carte pour afficher ses statistiques</div>
+      </div>
+    </div>
+    <div id="map"></div>
+  </section>
 
   <div class="status-banner warn" id="status-banner"></div>
 
@@ -112,5 +124,6 @@
   </footer>
 </div>
 <script src="assets/app.js"></script>
+<script src="assets/map.js"></script>
 </body>
 </html>
