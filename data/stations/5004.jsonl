@@ -4309,3 +4309,4 @@
 {"ts": "2026-10-29T19:46:21+00:00", "bikes": 16, "bikes_mechanical": 9, "bikes_electric": 7, "stands": 21, "capacity": 39, "status": "OPEN"}
 {"ts": "2026-10-29T20:01:46+00:00", "bikes": 19, "bikes_mechanical": 12, "bikes_electric": 7, "stands": 18, "capacity": 39, "status": "OPEN"}
 {"ts": "2026-10-29T20:16:28+00:00", "bikes": 18, "bikes_mechanical": 12, "bikes_electric": 6, "stands": 19, "capacity": 39, "status": "OPEN"}
+{"ts": "2026-10-29T20:31:35+00:00", "bikes": 11, "bikes_mechanical": 9, "bikes_electric": 2, "stands": 27, "capacity": 39, "status": "OPEN"}
